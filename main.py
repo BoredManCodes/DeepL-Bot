@@ -20,7 +20,9 @@ import time
 TOKEN = config("TOKEN")
 bot = commands.Bot(command_prefix='lang!')
 bot.lock = False
-bot.debug = False
+bot.debug = True
+bot.delay1 = 3
+bot.delay2 = 5
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -67,7 +69,7 @@ async def debug(ctx):
         await ctx.send('Debug enabled', delete_after=4)
 
 
-@bot.command(name='eng', help='Translates text to english. Usage: lang!eng <message>.', pass_context=True)
+@bot.command(name='en', help='Translates text to English. Usage: lang!en <message>.', pass_context=True)
 async def eng(ctx, *, message):
     if not bot.lock:
         await ctx.send('Translating.... Please wait', delete_after=4)
@@ -81,15 +83,15 @@ async def eng(ctx, *, message):
         input_area = driver.find_element_by_css_selector(input_css)
         input_area.clear()
         input_area.send_keys(text_to_translate)
-        time.sleep(10)
+        time.sleep(bot.delay2)
         output_button_xpath = '/html/body/div[2]/div[1]/div[4]/div[4]/div[3]/div[1]/div[2]/div[1]/button'
         output_button = driver.find_element_by_xpath(output_button_xpath)
         output_button.click()
-        time.sleep(6)
-        english_button_xpath = '/html/body/div[2]/div[1]/div[4]/div[4]/div[3]/div[3]/div[7]/div[1]/button[6]'
-        english_button = driver.find_element_by_xpath(english_button_xpath)
-        english_button.click()
-        time.sleep(3)
+        time.sleep(bot.delay2)
+        output_lang_button_xpath = '/html/body/div[2]/div[1]/div[4]/div[4]/div[3]/div[3]/div[7]/div[1]/button[6]'
+        output_lang_button = driver.find_element_by_xpath(output_lang_button_xpath)
+        output_lang_button.click()
+        time.sleep(bot.delay1)
         copy_button_css = 'div.lmt__target_toolbar__copy button'
         copy_button = driver.find_element_by_css_selector(copy_button_css)
         copy_button.click()
@@ -99,21 +101,21 @@ async def eng(ctx, *, message):
         driver.quit()
 
         dashes = '_' * 50
-        original ='Original    :', text_to_translate
-        translation = 'Translation :', content
-        detected_lang = 'Detected Language :', input_lang
-        if debug:
+        original ='Original:' + text_to_translate
+        translation = 'Translation:' + content
+        detected_lang = 'Detected Language:' + input_lang
+        if not debug:
             await ctx.send(dashes)
-            await ctx.send(original)
-            await ctx.send(translation)
+            await ctx.send(str(original).strip("(',)\'\",\',\'"))
+            await ctx.send(str(translation).strip("(',)\'\",\',\'"))
+            await ctx.send(str(detected_lang).strip("(',)\'\",\',\'"))
             await ctx.send(dashes)
-            await ctx.send(detected_lang)
 
         print(dashes)
-        print(original)
-        print(translation)
+        print(str(original).strip("(',)\'\",\',\'"))
+        print(str(translation).strip("(',)\'\",\',\'"))
+        print(str(detected_lang).strip("(',)\'\",\',\'"))
         print(dashes)
-        print(detected_lang)
         formatted_content = str(content).capitalize()
         embed_title = "Translated to English from " + input_lang
         formatted_embed_title = str(embed_title).strip("()\'\",\',\'")
@@ -129,6 +131,73 @@ async def eng(ctx, *, message):
         colour=discord.Color.red()
             ))
     await ctx.message.delete()
+
+@bot.command(name='bg', help='Translates text to Bulgarian. Usage: lang!bg <message>.', pass_context=True)
+async def eng(ctx, *, message):
+    if not bot.lock:
+        await ctx.send('Translating.... Please wait', delete_after=4)
+        text_to_translate = message
+        driver_path = './chromedriver'
+        driver = webdriver.Chrome(driver_path)
+        deepl_url = 'https://www.deepl.com/translator/bg'
+        driver.get(deepl_url)
+
+        input_css = 'div.lmt__inner_textarea_container textarea'
+        input_area = driver.find_element_by_css_selector(input_css)
+        input_area.clear()
+        input_area.send_keys(text_to_translate)
+        time.sleep(bot.delay2)
+        output_button_xpath = '/html/body/div[2]/div[1]/div[4]/div[4]/div[3]/div[1]/div[2]/div[1]/button'
+        output_button = driver.find_element_by_xpath(output_button_xpath)
+        output_button.click()
+        time.sleep(bot.delay2)
+        output_lang_button_xpath = '/html/body/div[2]/div[1]/div[4]/div[4]/div[3]/div[3]/div[7]/div[1]/button[1]/div'
+        output_lang_button = driver.find_element_by_xpath(output_lang_button_xpath)
+        output_lang_button.click()
+        time.sleep(bot.delay1)
+        copy_button_css = 'div.lmt__target_toolbar__copy button'
+        copy_button = driver.find_element_by_css_selector(copy_button_css)
+        copy_button.click()
+        content = clipboard.paste()
+        input_lang_xpath = '/html/body/div[2]/div[1]/div[4]/div[4]/div[1]/div[1]/div/button/span/strong'
+        input_lang = driver.find_element_by_xpath(input_lang_xpath).text
+        driver.quit()
+
+        dashes = '_' * 50
+        original ='Original:' + text_to_translate
+        translation = 'Translation:' + content
+        detected_lang = 'Detected Language:' + input_lang
+        if not debug:
+            await ctx.send(dashes)
+            await ctx.send(str(original).strip("(',)\'\",\',\'"))
+            await ctx.send(str(translation).strip("(',)\'\",\',\'"))
+            await ctx.send(str(detected_lang).strip("(',)\'\",\',\'"))
+            await ctx.send(dashes)
+
+        print(dashes)
+        print(str(original).strip("(',)\'\",\',\'"))
+        print(str(translation).strip("(',)\'\",\',\'"))
+        print(str(detected_lang).strip("(',)\'\",\',\'"))
+        print(dashes)
+        formatted_content = str(content).capitalize()
+        embed_title = "Translated to Bulgarian from " + input_lang
+        formatted_embed_title = str(embed_title).strip("()\'\",\',\'")
+        await ctx.send(embed=discord.Embed(
+        title=formatted_content,
+        description=formatted_embed_title,
+        colour=discord.Color.green()
+            ))
+    else:
+        await ctx.send(embed=discord.Embed(
+        title=':lock: Bot locked',
+        description='An admin has locked me from responding to commands \nI\'m probably being updated or I\'m borked',
+        colour=discord.Color.red()
+            ))
+    await ctx.message.delete()
+
+
+
+
 
 @bot.event
 async def on_ready():
